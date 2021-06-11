@@ -11,6 +11,11 @@ inputs:
   type:
     description: 'type of backup'
     defaul: db
+  db_action:
+    description: 'what do you need backup or restore?'
+    defaul: backup
+  db_backup_url:
+    description: 'public url where action can get backup'
   db_type:
     description: 'type of database'
     defaul: postgres
