@@ -74,5 +74,5 @@ elif [ "$INPUT_DB_ACTION" = "restore" ]; then
   wget -O $RESTORE_DIR/db_backup.pgsql.gz $FILEURL
   gunzip -c $RESTORE_DIR/db_backup.pgsql.gz > $RESTORE_DIR/db_backup.pgsql
   echo "Restoring backup..."
-  pg_restore -U $INPUT_DB_USER -h $INPUT_DB_HOST -p $INPUT_DB_PORT -d $INPUT_DB_NAME < $RESTORE_DIR/db_backup.pgsql && echo "Database restored"
+  psql -U $INPUT_DB_USER -h $INPUT_DB_HOST -p $INPUT_DB_PORT -d $INPUT_DB_NAME -f $RESTORE_DIR/db_backup.pgsql && echo "Database restored"
 fi
