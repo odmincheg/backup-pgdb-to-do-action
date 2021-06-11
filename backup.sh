@@ -52,7 +52,7 @@ if [ "$INPUT_DB_ACTION" = "backup" ]; then
   if [ "$INPUT_DB_TYPE" = "postgres" ]; then
     FILENAME=$INPUT_DB_TYPE-$INPUT_DB_NAME.$CURRENTDATE.pgsql.gz
     INPUT_DB_PORT="${INPUT_DB_PORT:-5432}"
-    INPUT_ARGS="${INPUT_ARGS} -C --column-inserts"
+    INPUT_ARGS="${INPUT_ARGS} -c -C --column-inserts"
     export PGPASSWORD="$INPUT_DB_PASS"
     echo "Creating database dump"
     pg_dump -U $INPUT_DB_USER -h $INPUT_DB_HOST -p $INPUT_DB_PORT $INPUT_ARGS $INPUT_DB_NAME | gzip -9 > $BACKUP_DIR/$FILENAME
