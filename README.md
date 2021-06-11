@@ -37,7 +37,7 @@ jobs:
         space_name: ${{ secrets.DO_SPACE_NAME }}
         space_region: ${{ secrets.REGION_NAME }} # nyc3
 
-    - name: Backup Staging Postgres DB
+    - name: Restore Postgres DB on remote host
       uses: odmincheg/backup-pgdb-to-do-action@1.0
       with:
         db_type: postgres
