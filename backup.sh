@@ -10,16 +10,21 @@ INPUT_PASS=""
 EXTRA_SCRIPT=""
 
 #----------------------------------------
-# Prepare to recipe to backup
+# Prepare to recipe to backup or restore
 #----------------------------------------
+echo "Checking provided credentials for database server"
+if [[ "$INPUT_DB_USER" = "" || "$INPUT_DB_NAME" = "" ]]; then
+  echo 'db_user and db_name should not be empty, Please specify.'
+  exit 1
+fi
+echo "Credentials for database server provided"
 
 if [ "$INPUT_DB_ACTION" = "backup" ]; then
-  echo "Checking provided credentials for database server"
-  if [[ "$INPUT_DB_USER" = "" || "$INPUT_DB_NAME" = "" ]]; then
-    echo 'db_user and db_name should not be empty, Please specify.'
+  if [[ "$INPUT_SPACE_ACCESS_KEY_ID" = "" || "$INPUT_SPACE_SECRET_ACCESS_KEY" = "" || "$INPUT_SPACE_NAME" = "" ]]; then
+    echo 'space_access_key_id and space_secret_access_key and space_name should not be empty, Please specify.'
     exit 1
   fi
-  echo "Credentials for database server provided"
+  echo "API Credentials provided"
 
   #----------------------------------------
   # DigitalOcean space section
@@ -39,12 +44,6 @@ if [ "$INPUT_DB_ACTION" = "backup" ]; then
   server_side_encryption = False" > ~/.s3cfg
   git clone https://github.com/s3tools/s3cmd
 
-  if [[ "$INPUT_SPACE_ACCESS_KEY_ID" = "" || "$INPUT_SPACE_SECRET_ACCESS_KEY" = "" || "$INPUT_SPACE_NAME" = "" ]]; then
-    echo 'space_access_key_id and space_secret_access_key and space_name should not be empty, Please specify.'
-    exit 1
-  fi
-  echo "API Credentials provided"
-  
   echo "Generating folder for backup"
   if [ ! -d ./$BACKUP_DIR/ ]; then
       mkdir -p $BACKUP_DIR
@@ -61,23 +60,20 @@ if [ "$INPUT_DB_ACTION" = "backup" ]; then
     echo "Starting upload to DigitalOcean space"
     python3 ./s3cmd/s3cmd put $BACKUP_DIR/$FILENAME s3://$INPUT_SPACE_NAME/$BACKUP_DIR/$FILENAME
   fi
-fi
-
-if [ "$INPUT_DB_ACTION" = "restore" ]; then
+  echo "Upload to DigitalOcean space completed"
+elif [ "$INPUT_DB_ACTION" = "restore" ]; then
+  echo "Creating restore folder"
   if [ ! -d ./$RESTORE_DIR/ ]; then
     mkdir -p $RESTORE_DIR
   fi
 
-  if [ "$INPUT_DB_TYPE" = "postgres" ]; then
-    FILEURL=$INPUT_DB_BACKUP_URL
-    INPUT_DB_PORT="${INPUT_DB_PORT:-5432}"
-    INPUT_ARGS="${INPUT_ARGS} -C --column-inserts"
-    export PGPASSWORD="$INPUT_DB_PASS"
-    echo "Downloading and extracting backup..."
-    wget -O $RESTORE_DIR/db_backup.pgsql.gz $FILEURL
-    gunzip -c $RESTORE_DIR/db_backup.pgsql.gz > $RESTORE_DIR/db_backup.pgsql
-    echo "Restoring backup..."
-    pg_restore -U $INPUT_DB_USER -h $INPUT_DB_HOST -p $INPUT_DB_PORT $INPUT_ARGS $INPUT_DB_NAME < $RESTORE_DIR/ && echo "Database restored"
-  fi
+  FILEURL=$INPUT_DB_BACKUP_URL
+  INPUT_DB_PORT="${INPUT_DB_PORT:-5432}"
+  INPUT_ARGS="${INPUT_ARGS} -C --column-inserts"
+  export PGPASSWORD="$INPUT_DB_PASS"
+  echo "Downloading and extracting backup..."
+  wget -O $RESTORE_DIR/db_backup.pgsql.gz $FILEURL
+  gunzip -c $RESTORE_DIR/db_backup.pgsql.gz > $RESTORE_DIR/db_backup.pgsql
+  echo "Restoring backup..."
+  pg_restore -U $INPUT_DB_USER -h $INPUT_DB_HOST -p $INPUT_DB_PORT $INPUT_ARGS $INPUT_DB_NAME < $RESTORE_DIR/ && echo "Database restored"
 fi
-echo "Upload to DigitalOcean space completed"
