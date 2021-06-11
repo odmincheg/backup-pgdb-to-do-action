@@ -23,7 +23,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Backup Staging Postgres DB
-      uses: odmincheg/backup-pgdb-to-do-action@1.0
+      uses: odmincheg/backup-pgdb-to-do-action@1.2
       with:
         db_type: postgres
         db_action: backup
@@ -38,7 +38,7 @@ jobs:
         space_region: ${{ secrets.REGION_NAME }} # nyc3
 
     - name: Restore Postgres DB on remote host
-      uses: odmincheg/backup-pgdb-to-do-action@1.0
+      uses: odmincheg/backup-pgdb-to-do-action@1.2
       with:
         db_type: postgres
         db_action: restore
