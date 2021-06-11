@@ -5,6 +5,7 @@
 
 CURRENTDATE=`date +%d%m%y%H%M`
 BACKUP_DIR="backups"
+RESTORE_DIR="restore"
 INPUT_PASS=""
 EXTRA_SCRIPT=""
 
@@ -49,17 +50,35 @@ if [[ "$INPUT_DB_USER" = "" || "$INPUT_DB_NAME" = "" ]]; then
 fi
 
 echo "Credentials for database server provided"
-
-if [ "$INPUT_DB_TYPE" = "postgres" ]; then
-  FILENAME=$INPUT_DB_TYPE-$INPUT_DB_NAME.$CURRENTDATE.pgsql.gz
-  INPUT_DB_PORT="${INPUT_DB_PORT:-5432}"
-  INPUT_ARGS="${INPUT_ARGS} -C --column-inserts"
-  export PGPASSWORD="$INPUT_DB_PASS"
-  echo "Creating database dump"
-  pg_dump -U $INPUT_DB_USER -h $INPUT_DB_HOST -p $INPUT_DB_PORT $INPUT_ARGS $INPUT_DB_NAME | gzip -9 > $BACKUP_DIR/$FILENAME
-  echo "Db dump completed. File: $FILENAME"
-  echo "Starting upload to DigitalOcean space"
-  python3 ./s3cmd/s3cmd put $BACKUP_DIR/$FILENAME s3://$INPUT_SPACE_NAME/$BACKUP_DIR/$FILENAME
+if [ "$INPUT_DB_ACTION" = "backup" ]; then
+  if [ "$INPUT_DB_TYPE" = "postgres" ]; then
+    FILENAME=$INPUT_DB_TYPE-$INPUT_DB_NAME.$CURRENTDATE.pgsql.gz
+    INPUT_DB_PORT="${INPUT_DB_PORT:-5432}"
+    INPUT_ARGS="${INPUT_ARGS} -C --column-inserts"
+    export PGPASSWORD="$INPUT_DB_PASS"
+    echo "Creating database dump"
+    pg_dump -U $INPUT_DB_USER -h $INPUT_DB_HOST -p $INPUT_DB_PORT $INPUT_ARGS $INPUT_DB_NAME | gzip -9 > $BACKUP_DIR/$FILENAME
+    echo "Db dump completed. File: $FILENAME"
+    echo "Starting upload to DigitalOcean space"
+    python3 ./s3cmd/s3cmd put $BACKUP_DIR/$FILENAME s3://$INPUT_SPACE_NAME/$BACKUP_DIR/$FILENAME
+  fi
 fi
 
+if [ "$INPUT_DB_ACTION" = "restore" ]; then
+  if [ ! -d ./$RESTORE_DIR/ ]; then
+    mkdir -p $RESTORE_DIR
+  fi
+
+  if [ "$INPUT_DB_TYPE" = "postgres" ]; then
+    FILEURL=$INPUT_DB_BACKUP_URL
+    INPUT_DB_PORT="${INPUT_DB_PORT:-5432}"
+    INPUT_ARGS="${INPUT_ARGS} -C --column-inserts"
+    export PGPASSWORD="$INPUT_DB_PASS"
+    echo "Downloading and extracting backup..."
+    wget -O $RESTORE_DIR/db_backup.pgsql.gz $FILEURL
+    gunzip -c $RESTORE_DIR/db_backup.pgsql.gz > $RESTORE_DIR/db_backup.pgsql
+    echo "Restoring backup..."
+    pg_restore -U $INPUT_DB_USER -h $INPUT_DB_HOST -p $INPUT_DB_PORT $INPUT_ARGS $INPUT_DB_NAME < $RESTORE_DIR/ && echo "Database restored"
+  fi
+fi
 echo "Upload to DigitalOcean space completed"
