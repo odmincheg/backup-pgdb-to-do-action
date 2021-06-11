@@ -1,0 +1,42 @@
+name: 'Backup PostgreSQL database to DigitalOcean space Action'
+description: 'PostgreSQL database backup and upload it to DigitalOcean space'
+author: 'Andrii Kisel'
+
+inputs:
+  envs:
+    description: 'pass environment variable to shell script'
+  debug:
+    description: 'enable debug mode'
+    default: false
+  type:
+    description: 'type of backup'
+    defaul: db
+  db_type:
+    description: 'type of database'
+    defaul: postgres
+  db_user:
+    description: 'database username'
+  db_pass:
+    description: 'database password'
+  db_name:
+    description: 'database name'
+  db_host:
+    description: 'database host'
+    default: 'localhost'
+  db_port:
+    description: 'database port'
+  space_name:
+    description: 'bucket name for your backups'
+  space_region:
+    description: 'space region'
+    default: ny3
+  space_access_key_id:
+    description: 'DigitalOcean API access key'
+  space_secret_access_key:
+    description: 'DigitalOcean API secret access key'
+  args:
+    description: 'additional arguments with backup command if you want to pass'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
