@@ -12,11 +12,6 @@ EXTRA_SCRIPT=""
 #----------------------------------------
 # DigitalOcean space section
 #----------------------------------------
-if [[ "$INPUT_SPACE_ACCESS_KEY_ID" = "" || "$INPUT_SPACE_SECRET_ACCESS_KEY" = "" || "$INPUT_SPACE_NAME" = "" ]]; then
-  echo 'space_access_key_id and space_secret_access_key and space_name should not be empty, Please specify.'
-  exit 1
-fi
-
 echo "Credentials provided"
 
 touch ~/.s3cfg
@@ -42,15 +37,19 @@ if [ ! -d ./$BACKUP_DIR/ ]; then
     mkdir -p $BACKUP_DIR
 fi
 
-echo "Checking provided credentials for database server"
-
-if [[ "$INPUT_DB_USER" = "" || "$INPUT_DB_NAME" = "" ]]; then
-  echo 'db_user and db_name should not be empty, Please specify.'
-  exit 1
-fi
-
-echo "Credentials for database server provided"
 if [ "$INPUT_DB_ACTION" = "backup" ]; then
+  echo "Checking provided credentials for database server"
+  if [[ "$INPUT_DB_USER" = "" || "$INPUT_DB_NAME" = "" ]]; then
+    echo 'db_user and db_name should not be empty, Please specify.'
+    exit 1
+  fi
+  echo "Credentials for database server provided"
+
+  if [[ "$INPUT_SPACE_ACCESS_KEY_ID" = "" || "$INPUT_SPACE_SECRET_ACCESS_KEY" = "" || "$INPUT_SPACE_NAME" = "" ]]; then
+    echo 'space_access_key_id and space_secret_access_key and space_name should not be empty, Please specify.'
+    exit 1
+  fi
+  
   if [ "$INPUT_DB_TYPE" = "postgres" ]; then
     FILENAME=$INPUT_DB_TYPE-$INPUT_DB_NAME.$CURRENTDATE.pgsql.gz
     INPUT_DB_PORT="${INPUT_DB_PORT:-5432}"
