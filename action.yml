@@ -29,7 +29,7 @@ inputs:
     description: 'bucket name for your backups'
   space_region:
     description: 'space region'
-    default: ny3
+    default: nyc3
   space_access_key_id:
     description: 'DigitalOcean API access key'
   space_secret_access_key:
