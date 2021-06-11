@@ -23,7 +23,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Backup Staging Postgres DB
-      uses: odmincheg/backup-pgdb-to-do-action
+      uses: odmincheg/backup-pgdb-to-do-action@1.0
       with:
         db_type: postgres
         db_host: ${{ secrets.STG_DB_HOST }}
