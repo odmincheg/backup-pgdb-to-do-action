@@ -70,10 +70,7 @@ elif [ "$INPUT_DB_ACTION" = "restore" ]; then
   FILEURL=$INPUT_DB_BACKUP_URL
   INPUT_DB_PORT="${INPUT_DB_PORT:-5432}"
   export PGPASSWORD="$INPUT_DB_PASS"
-  echo "Removing old db"
-  dropdb -U $INPUT_DB_USER -h $INPUT_DB_HOST -p $INPUT_DB_PORT $INPUT_DB_NAME
-  echo "Creating new DB"
-  createdb -D public -U $INPUT_DB_USER -h $INPUT_DB_HOST -p $INPUT_DB_PORT $INPUT_DB_NAME
+  
   echo "Downloading and extracting backup..."
   wget -O $RESTORE_DIR/db_backup.pgsql.gz $FILEURL
   gunzip -c $RESTORE_DIR/db_backup.pgsql.gz > $RESTORE_DIR/db_backup.pgsql
